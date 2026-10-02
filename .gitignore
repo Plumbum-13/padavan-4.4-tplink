@@ -1,0 +1,39 @@
+# Временные файлы компиляции исходников (объектные файлы и библиотеки)
+*.o
+*.ko
+*.obj
+*.elf
+*.a
+*.la
+*.lo
+*.so
+*.so.[0-9]*
+*.mod
+*.mod.c
+*.gch
+*.d
+
+# Логи компиляции и сборки
+*.log
+*.stdout
+*.stderr
+build.log
+
+# Скрытые архивы и кэш закачек crosstool-NG
+.download/
+*.tar.bz2
+*.tar.gz
+*.tar.xz
+*.tgz
+
+# Директории сборки тулчейна и промежуточные файлы сборки (сгенерированные)
+.build/
+.config
+.config.old
+..config.tmp
+*.config
+
+# Специфичные для Padavan временные файлы и образы
+trunk/images/
+trunk/stage/
+trunk/build/
