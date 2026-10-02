@@ -1,0 +1,1 @@
+SUBSYSTEM=="bdi", ACTION=="add", PROGRAM="//libexec/nfsrahead %k", ATTR{read_ahead_kb}="%c"

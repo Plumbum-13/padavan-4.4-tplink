@@ -1,0 +1,182 @@
+/dts-v1/;
+
+#include "mt7628an.dtsi"
+#include <dt-bindings/input/input.h>
+#include <dt-bindings/gpio/gpio.h>
+
+/ {
+	compatible = "ralink,mt7620a-soc";
+	model = "TP-Link Archer C50";
+
+	aliases {
+		led-boot = &led_power;
+		led-failsafe = &led_power;
+		led-running = &led_power;
+		led-upgrade = &led_power;
+	};
+
+	chosen {
+		bootargs = "console=ttyS0,115200";
+	};
+
+	memory@0 {
+		device_type = "memory";
+//		reg = <0x0 0x10000000>; //256MB RAM
+//		reg = <0x0 0x8000000>; //128MB RAM
+		reg = <0x0 0x4000000>; //64MB RAM
+	};
+
+	palmbus@10000000 {
+
+		gpio: gpio@600 {
+			status = "okay";
+		};
+
+		spi@b00 {
+			status = "okay";
+
+			m25p80@0 {
+				#address-cells = <1>;
+				#size-cells = <1>;
+				compatible = "jedec,spi-nor";
+				reg = <0 0>;
+				linux,modalias = "w25q64", "w25q128", "w25q256";
+				spi-max-frequency = <10000000>;
+
+				partition@0 {
+					label = "f-boot";
+					reg = <0x0 0x30000>;
+					read-only;
+				};
+
+				partition@30000 {
+					label = "u-boot";
+					reg = <0x30000 0x20000>;
+					read-only;
+				};
+
+				partition@50000 {
+					label = "firmware";
+					reg = <0x50000 0xf70000>;
+				};
+
+				partition@7c0000 {
+					label = "config";
+					reg = <0xfc0000 0x10000>;
+				};
+
+				rom: partition@7d0000 {
+					label = "rom";
+					reg = <0xfd0000 0x10000>;
+				};
+
+				partition@7e0000 {
+					label = "romfile";
+					reg = <0xfe0000 0x10000>;
+				};
+
+				radio: partition@7f0000 {
+					label = "radio";
+					reg = <0xff0000 0x10000>;
+				};
+			};
+		};
+	};
+
+	pinctrl {
+		state_default: pinctrl0 {
+			gpio {
+				groups = "i2c", "p0led_an", "p1led_an", "p2led_an", "p3led_an", "p4led_an", "wdt", "wled_an";
+				function = "gpio";
+			};
+		};
+	};
+
+	ethernet@10100000 {
+		pinctrl-names = "default";
+		mtd-mac-address = <&rom 0xf100>;
+		ralink,port-map = "wllll";
+	};
+
+	esw@10110000 {
+		ralink,portmap = <0x3e>;
+		ralink,port4 = "ephy";
+	};
+
+
+	wmac@10180000 {
+		status = "okay";
+		mediatek,mtd-eeprom = <&radio 0x0>;
+	};
+
+	pcie@10140000 {
+		status = "okay";
+
+		pcie-bridge {
+			mt76@0,0 {
+				reg = <0x0000 0 0 0 0>;
+				device_type = "pci";
+				mediatek,mtd-eeprom = <&radio 32768>;
+				mediatek,2ghz = <0>;
+			};
+		};
+	};
+
+	gpio-leds {
+		compatible = "gpio-leds";
+
+		led_power: power {
+			label = "green:power";
+			gpios = <&gpio 11 GPIO_ACTIVE_LOW>;
+		};
+
+		wlan2 {
+			label = "green:wlan2g";
+			gpios = <&gpio 44 GPIO_ACTIVE_LOW>;
+		};
+
+		wlan5 {
+			label = "green:wlan5g";
+			gpios = <&gpio 42 GPIO_ACTIVE_LOW>;
+		};
+
+		lan {
+			label = "green:lan";
+			gpios = <&gpio 41 GPIO_ACTIVE_LOW>;
+		};
+
+		wan {
+			label = "green:wan";
+			gpios = <&gpio 39 GPIO_ACTIVE_LOW>;
+		};
+
+		wan_orange {
+			label = "orange:wan";
+			gpios = <&gpio 40 GPIO_ACTIVE_LOW>;
+		};
+
+		wps {
+			label = "green:wps";
+			gpios = <&gpio 43 GPIO_ACTIVE_LOW>;
+		};
+	};
+
+        gpio-keys-polled {
+                compatible = "gpio-keys-polled";
+                #address-cells = <1>;
+                #size-cells = <0>;
+                poll-interval = <20>;
+
+                reset {
+                        label = "reset";
+                        gpios = <&gpio 38 GPIO_ACTIVE_LOW>;
+                        linux,code = <KEY_RESTART>;
+                };
+
+                rfkill {
+                        label = "rfkill";
+                        gpios = <&gpio 5 GPIO_ACTIVE_LOW>;
+                        linux,code = <KEY_RFKILL>;
+                };
+        };
+};
